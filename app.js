@@ -583,7 +583,7 @@ function renderQuestion(index) {
 
   ['a', 'b', 'c', 'd', 'e'].forEach(letter => {
     const optText = q[`option_${letter}`];
-    if (optText === null || optText === undefined) return;
+    if (optText === null || optText === undefined || String(optText).trim() === '') return;
 
     const btn = document.createElement('button');
     btn.className = 'option-btn' + (examState.answers[index] === letter ? ' selected' : '');
@@ -597,6 +597,11 @@ function renderQuestion(index) {
   updateNavButtons();
   updateActiveTab();
   updatePaletteHighlight();
+
+  // Render LaTeX if MathJax is loaded
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([card]).catch(err => console.warn('MathJax error:', err));
+  }
 }
 
 function selectAnswer(index, letter) {
@@ -879,7 +884,7 @@ function renderReviewScreen(filter) {
     let optsHTML = '';
     ['a','b','c','d','e'].forEach(letter => {
       const optText = q[`option_${letter}`];
-      if (optText === null || optText === undefined) return;
+      if (optText === null || optText === undefined || String(optText).trim() === '') return;
       const isCorrect = letter === q.correct_answer;
       const isUserWrong = ans && ans === letter && letter !== q.correct_answer;
       let cls = 'review-option';
@@ -978,4 +983,9 @@ function renderReviewScreen(filter) {
       });
     }
   });
+
+  // Render LaTeX across entire review body
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([body]).catch(err => console.warn('MathJax error:', err));
+  }
 }
