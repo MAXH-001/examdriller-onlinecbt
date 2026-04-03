@@ -571,7 +571,7 @@ function renderQuestion(index) {
   if (q.photo) {
     const img = document.createElement('img');
     img.className = 'question-image';
-    img.src = `exam_images/question/${q.photo}`;
+    img.src = `exam_image/question/${q.photo}`;
     img.alt = 'Question image';
     img.onerror = () => img.style.display = 'none';
     card.appendChild(img);
@@ -907,7 +907,7 @@ function renderReviewScreen(filter) {
     // Image
     let imgHTML = '';
     if (q.photo) {
-      imgHTML = `<img class="question-image" src="exam_images/question/${q.photo}" alt="" onerror="this.style.display='none'" />`;
+      imgHTML = `<img class="question-image" src="exam_image/question/${q.photo}" alt="" onerror="this.style.display='none'" />`;
     }
 
     // AI Explanation
