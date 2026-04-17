@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ExamDriller Online — CBT Practice</title>
+  <title>ExamDriller Lite — CBT Practice</title>
   <link rel="icon" href="logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,10 +30,13 @@
   <div id="screen-login" class="screen">
     <div class="auth-wrap">
       <div class="auth-logo">
-        <img src="logo.png" alt="ExamDriller" class="auth-logo-img" onerror="this.style.display='none'" />
-        <div class="auth-logo-text">
-          <span class="gold">ExamDriller</span><span class="blue"> Online</span>
+        <div class="auth-logo-ring">
+          <img src="logo.png" alt="ExamDriller" class="auth-logo-img" onerror="this.style.display='none'" />
         </div>
+        <div class="auth-logo-text">
+          <span class="gold">ExamDriller</span><span class="blue"> Lite</span>
+        </div>
+        <div class="auth-logo-badge">CBT Practice App</div>
       </div>
 
       <div class="auth-card">
@@ -68,10 +71,13 @@
   <div id="screen-register" class="screen">
     <div class="auth-wrap">
       <div class="auth-logo">
-        <img src="logo.png" alt="ExamDriller" class="auth-logo-img" onerror="this.style.display='none'" />
-        <div class="auth-logo-text">
-          <span class="gold">ExamDriller</span><span class="blue"> Online</span>
+        <div class="auth-logo-ring">
+          <img src="logo.png" alt="ExamDriller" class="auth-logo-img" onerror="this.style.display='none'" />
         </div>
+        <div class="auth-logo-text">
+          <span class="gold">ExamDriller</span><span class="blue"> Lite</span>
+        </div>
+        <div class="auth-logo-badge">CBT Practice App</div>
       </div>
 
       <div class="auth-card">
@@ -126,35 +132,119 @@
        SCREEN 1: HOME
        ═══════════════════════════════════════════════════════ -->
   <div id="screen-home" class="screen">
-    <div class="home-hero">
-      <div class="particles" id="particles"></div>
-      <div class="home-content">
-        <!-- User greeting bar -->
-        <div class="user-bar" id="user-bar">
-          <span class="user-greeting" id="home-greeting">Hello</span>
-          <button class="btn-history-home" id="btn-history-home" title="Score History">📊 History</button>
-          <button class="btn-logout" id="btn-logout">Log Out</button>
+
+    <!-- TOP NAV BAR -->
+    <div class="home-topbar">
+      <div class="home-topbar-left">
+        <img src="logo.png" alt="ExamDriller" class="home-topbar-logo" onerror="this.style.display='none'" />
+        <div class="home-topbar-brand-wrap">
+          <span class="home-topbar-brand"><span class="gold">Exam</span><span class="blue-light">Driller</span></span>
+          <span class="home-topbar-badge">Lite</span>
         </div>
-
-        <div class="logo-wrap">
-          <img src="logo.png" alt="ExamDriller" class="logo-img" onerror="this.style.display='none'" />
-          <h1 class="logo-text"><span class="gold">ExamDriller</span><span class="blue-light"> Online</span></h1>
-        </div>
-
-        <p class="tagline">Practice Smart. Pass with Confidence.</p>
-
-        <div class="stats-row">
-          <div class="stat-item"><span class="stat-num">15,000+</span><span class="stat-label">Questions</span></div>
-          <div class="stat-divider"></div>
-          <div class="stat-item"><span class="stat-num">14</span><span class="stat-label">Subjects</span></div>
-          <div class="stat-divider"></div>
-          <div class="stat-item"><span class="stat-num">2000–2022</span><span class="stat-label">Past Questions</span></div>
-        </div>
-
-        <button class="btn-cta" id="btn-start">Start Practice</button>
-        <p class="home-sub">JAMB · WAEC · NECO — All in one place</p>
+      </div>
+      <div class="home-topbar-actions">
+        <button class="home-icon-btn" id="btn-history-home" title="Score History">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          History
+        </button>
+        <button class="home-icon-btn home-icon-btn--outline" id="btn-logout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log Out
+        </button>
       </div>
     </div>
+
+    <!-- HERO SECTION -->
+    <div class="home-hero">
+      <div class="particles" id="particles"></div>
+      <div class="home-hero-inner">
+
+        <!-- Greeting -->
+        <div class="home-greeting-chip">
+          <span class="home-greeting-dot"></span>
+          <span id="home-greeting">Hello there</span>
+        </div>
+
+        <!-- Hero Headline -->
+        <div class="home-hero-headline">
+          <h1 class="home-headline-text">Ready to <span class="gold">Ace</span> Your Exams?</h1>
+          <p class="home-headline-sub">Practice Smart. Pass with Confidence.</p>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="home-stats-row">
+          <div class="home-stat-card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span class="home-stat-num">15,000+</span>
+            <span class="home-stat-lbl">Questions</span>
+          </div>
+          <div class="home-stat-card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            <span class="home-stat-num">14</span>
+            <span class="home-stat-lbl">Subjects</span>
+          </div>
+          <div class="home-stat-card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="home-stat-num">2000–2022</span>
+            <span class="home-stat-lbl">Past Papers</span>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        <button class="home-cta-btn" id="btn-start">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Start Practice
+        </button>
+
+        <!-- Exam badges -->
+        <div class="home-exam-badges">
+          <span class="home-exam-badge">JAMB</span>
+          <span class="home-exam-badge-dot">·</span>
+          <span class="home-exam-badge">WAEC</span>
+          <span class="home-exam-badge-dot">·</span>
+          <span class="home-exam-badge">NECO</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- QUIZ CODE ENTRY -->
+    <div class="home-quiz-code-bar">
+      <input type="text" id="quiz-code-input" class="quiz-code-input" placeholder="Quiz code, result code, or paste URL…" maxlength="200" autocomplete="off" autocapitalize="characters" />
+      <button class="quiz-code-btn" id="btn-join-quiz">Join</button>
+    </div>
+
+    <!-- FEATURE CARDS -->
+    <div class="home-features">
+      <div class="home-feature-card">
+        <div class="home-feature-icon home-feature-icon--gold">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="home-feature-text">
+          <span class="home-feature-title">Timed CBT Mode</span>
+          <span class="home-feature-sub">Simulate real exam conditions</span>
+        </div>
+      </div>
+      <div class="home-feature-card">
+        <div class="home-feature-icon home-feature-icon--blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="home-feature-text">
+          <span class="home-feature-title">Filter by Year or Topic</span>
+          <span class="home-feature-sub">Targeted practice, faster results</span>
+        </div>
+      </div>
+      <div class="home-feature-card">
+        <div class="home-feature-icon home-feature-icon--green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="home-feature-text">
+          <span class="home-feature-title">Score Tracking</span>
+          <span class="home-feature-sub">Monitor your improvement</span>
+        </div>
+      </div>
+    </div>
+
     <footer class="home-footer">© 2026 Maxh Technologies Ltd</footer>
   </div>
 
@@ -397,9 +487,18 @@
   <div id="modal-share-result" class="modal-overlay hidden">
     <div class="modal" style="max-width:360px;">
       <h3>🎉 Share Your Result</h3>
-      <p style="margin:8px 0 4px; font-size:0.85rem; color:var(--text-secondary);">Anyone with this link can see your score:</p>
+      <p style="margin:8px 0 12px; font-size:0.85rem; color:var(--text-secondary);">Share via <strong>code</strong> or link. Anyone can view your score!</p>
+
+      <div id="share-result-code-row" style="text-align:center; margin-bottom:14px;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Result Code</div>
+        <div id="share-result-code-display" style="font-family:'Outfit',monospace;font-size:1.8rem;font-weight:900;color:var(--accent-gold);letter-spacing:4px;background:var(--bg-primary);padding:12px 16px;border-radius:10px;border:1.5px solid var(--border);"></div>
+      </div>
+
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Or share link</div>
       <div class="quiz-link-box" id="share-result-link-display"></div>
-      <div class="modal-actions" style="flex-wrap:wrap; gap:8px;">
+
+      <div class="modal-actions" style="flex-wrap:wrap; gap:8px; margin-top:12px;">
+        <button class="btn-secondary" id="btn-copy-result-code">Copy Code</button>
         <button class="btn-secondary" id="btn-copy-result-link">Copy Link</button>
         <button class="btn-primary" id="btn-close-share-modal">Done</button>
       </div>
@@ -488,6 +587,42 @@
         </div>
       </div>
 
+      <!-- Activation Keys Card -->
+      <div class="admin-section-card">
+        <div class="admin-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Activation Keys
+        </div>
+        <div class="admin-form">
+          <div class="form-group">
+            <label class="form-label">Note / Student Name (optional)</label>
+            <input type="text" id="admin-key-note" class="form-input" placeholder="e.g. Amaka Okonkwo — paid ₦900" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">How many keys to generate?</label>
+            <div class="toggle-group" id="admin-key-count-group">
+              <button class="toggle-btn active" data-count="1">1</button>
+              <button class="toggle-btn" data-count="3">3</button>
+              <button class="toggle-btn" data-count="5">5</button>
+              <button class="toggle-btn" data-count="10">10</button>
+            </div>
+          </div>
+          <button class="btn-primary" id="btn-generate-key" style="width:100%; margin-top:8px;">🔑 Generate Key(s)</button>
+        </div>
+
+        <!-- Generated keys display -->
+        <div id="admin-keys-output" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;">Generated Keys — tap to copy</div>
+          <div id="admin-keys-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <!-- Existing keys list -->
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;">All Keys</div>
+          <div id="admin-all-keys-list"><p class="admin-empty-msg">Loading…</p></div>
+        </div>
+      </div>
+
       <!-- Existing Quizzes -->
       <div class="admin-section-card">
         <div class="admin-section-title">
@@ -505,9 +640,18 @@
   <div id="modal-quiz-link" class="modal-overlay hidden">
     <div class="modal" style="max-width:360px;">
       <h3>🎉 Quiz Created!</h3>
-      <p style="margin:8px 0 4px; font-size:0.85rem; color:var(--text-secondary);">Share this link with participants:</p>
+      <p style="margin:8px 0 12px; font-size:0.85rem; color:var(--text-secondary);">Share the <strong>code</strong> or the link with participants:</p>
+
+      <div style="text-align:center; margin-bottom:14px;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Quiz Code</div>
+        <div id="quiz-code-display" style="font-family:'Outfit',monospace;font-size:1.8rem;font-weight:900;color:var(--accent-gold);letter-spacing:4px;background:var(--bg-primary);padding:12px 16px;border-radius:10px;border:1.5px solid var(--border);"></div>
+      </div>
+
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Or share link</div>
       <div class="quiz-link-box" id="quiz-link-display"></div>
-      <div class="modal-actions" style="flex-wrap:wrap; gap:8px;">
+
+      <div class="modal-actions" style="flex-wrap:wrap; gap:8px; margin-top:12px;">
+        <button class="btn-secondary" id="btn-copy-quiz-code">Copy Code</button>
         <button class="btn-secondary" id="btn-copy-link">Copy Link</button>
         <button class="btn-primary" id="btn-close-link-modal">Done</button>
       </div>
