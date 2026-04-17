@@ -5,11 +5,158 @@
 
 'use strict';
 
+/* ── DEVICE ID (injected by Android via JavascriptInterface) ────── */
+function getDeviceId() {
+  try {
+    if (window.Android && typeof window.Android.getDeviceId === 'function') {
+      return window.Android.getDeviceId();
+    }
+  } catch (_) {}
+  return 'web';
+}
+
+/* ── ACTIVATION STATE ────────────────────────────────────────────── */
+var _isActivated = false; // set true after login confirms activation
+
+function isActivated() { return _isActivated; }
+
+function hasUsedFreeTrial() {
+  try { return localStorage.getItem('ed_lite_free_used') === '1'; } catch (_) { return false; }
+}
+function markFreeTrialUsed() {
+  try { localStorage.setItem('ed_lite_free_used', '1'); } catch (_) {}
+}
+function markActivated() {
+  _isActivated = true;
+  try { localStorage.setItem('ed_lite_activated', '1'); } catch (_) {}
+}
+function restoreActivationState() {
+  try { return localStorage.getItem('ed_lite_activated') === '1'; } catch (_) { return false; }
+}
+
+function showActivationWall() {
+  var email = currentUser ? currentUser.email : '';
+  var waMsg = encodeURIComponent('Hello, I want to activate ExamDriller Lite. My email: ' + email);
+  var waUrl = 'https://wa.me/2349116959509?text=' + waMsg;
+
+  var overlay = document.createElement('div');
+  overlay.id = 'activation-wall';
+  overlay.style.cssText = [
+    'position:fixed;inset:0;z-index:9999;',
+    'background:rgba(13,31,60,0.97);',
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;',
+    'padding:32px 24px;text-align:center;overflow-y:auto;'
+  ].join('');
+
+  overlay.innerHTML =
+    '<div style="font-size:3rem;margin-bottom:16px;">🔒</div>' +
+    '<h2 style="font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:8px;">Activate to Continue</h2>' +
+    '<p style="color:rgba(255,255,255,0.6);font-size:0.9rem;line-height:1.5;max-width:300px;margin-bottom:4px;">' +
+      'You have used your free trial.' +
+    '</p>' +
+    '<p style="color:rgba(255,255,255,0.6);font-size:0.9rem;line-height:1.5;max-width:300px;margin-bottom:20px;">' +
+      'Pay <strong style="color:#f5b400;">₦900</strong> once to unlock ExamDriller Lite forever on this device.' +
+    '</p>' +
+    '<button onclick="if(window.Android&&window.Android.openUrl){window.Android.openUrl(\'' + waUrl + '\')}else{window.open(\'' + waUrl + '\',\'_blank\')}" ' +
+      'style="display:flex;align-items:center;gap:10px;background:#25D366;color:#fff;' +
+             'font-family:Outfit,sans-serif;font-weight:800;font-size:1rem;' +
+             'padding:15px 28px;border-radius:12px;border:none;cursor:pointer;' +
+             'box-shadow:0 4px 20px rgba(37,211,102,0.4);margin-bottom:28px;">' +
+      '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z\"/><path d=\"M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.864L.057 23.882l6.196-1.448A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.358-.213-3.722.87.936-3.62-.234-.373A9.818 9.818 0 1112 21.818z\"/></svg>' +
+      'Pay ₦900 via WhatsApp' +
+    '</button>' +
+
+    '<div style="width:100%;max-width:320px;margin-bottom:8px;">' +
+      '<p style="color:rgba(255,255,255,0.75);font-size:0.85rem;margin-bottom:10px;font-weight:600;">Already paid? Enter your activation key:</p>' +
+      '<input id="activation-key-input" type="text" ' +
+        'placeholder="e.g. ED-XXXX-XXXX-XXXX" ' +
+        'style="width:100%;box-sizing:border-box;padding:13px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.15);' +
+               'background:rgba(255,255,255,0.08);color:#fff;font-family:Outfit,monospace;font-size:1rem;' +
+               'text-align:center;letter-spacing:2px;outline:none;margin-bottom:10px;" />' +
+      '<button id="btn-activate-key" ' +
+        'style="width:100%;padding:14px;border-radius:10px;border:none;cursor:pointer;' +
+               'background:linear-gradient(135deg,#f5b400,#e09000);color:#0a0e1a;' +
+               'font-family:Outfit,sans-serif;font-weight:800;font-size:1rem;">' +
+        'Activate Now' +
+      '</button>' +
+      '<p id="activation-key-msg" style="color:#f87171;font-size:0.8rem;margin-top:8px;min-height:18px;"></p>' +
+    '</div>' +
+
+    '<p style="color:rgba(255,255,255,0.35);font-size:0.75rem;max-width:300px;">' +
+      'After payment, message us on WhatsApp and we\'ll send your activation key within minutes.' +
+    '</p>';
+
+  document.body.appendChild(overlay);
+
+  // Auto-format key input as user types (insert dashes)
+  var keyInput = document.getElementById('activation-key-input');
+  keyInput.addEventListener('input', function() {
+    var raw = keyInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    var parts = [];
+    if (raw.length > 0) parts.push(raw.slice(0, 2));   // ED
+    if (raw.length > 2) parts.push(raw.slice(2, 6));   // XXXX
+    if (raw.length > 6) parts.push(raw.slice(6, 10));  // XXXX
+    if (raw.length > 10) parts.push(raw.slice(10, 14)); // XXXX
+    keyInput.value = parts.join('-');
+  });
+
+  keyInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('btn-activate-key').click();
+  });
+
+  document.getElementById('btn-activate-key').addEventListener('click', async function() {
+    var key = keyInput.value.trim();
+    var msgEl = document.getElementById('activation-key-msg');
+    if (!key || key.length < 14) {
+      msgEl.textContent = 'Please enter a valid activation key.';
+      msgEl.style.color = '#f87171';
+      return;
+    }
+    var btn = document.getElementById('btn-activate-key');
+    btn.textContent = 'Activating…';
+    btn.disabled = true;
+    msgEl.textContent = '';
+    try {
+      var deviceId = getDeviceId();
+      var result = await apiCall({ action: 'activateWithKey', email: currentUser.email, key: key, deviceId: deviceId });
+      if (result.success && result.activated) {
+        markActivated();
+        if (result.user) saveSession(result.user);
+        msgEl.style.color = '#4ade80';
+        msgEl.textContent = '✅ Activated! Enjoy ExamDriller Lite.';
+        setTimeout(function() {
+          var wall = document.getElementById('activation-wall');
+          if (wall) wall.remove();
+        }, 1500);
+      } else {
+        msgEl.style.color = '#f87171';
+        msgEl.textContent = result.error || 'Invalid key. Check and try again.';
+        btn.textContent = 'Activate Now';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      msgEl.style.color = '#f87171';
+      msgEl.textContent = 'Connection error. Check your internet.';
+      btn.textContent = 'Activate Now';
+      btn.disabled = false;
+    }
+  });
+}
+
 /* ── GOOGLE APPS SCRIPT URL ──────────────────────────
    After deploying your Code.gs as a Web App, paste
    the URL here (between the quotes).
    ──────────────────────────────────────────────────── */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkyhhnsFGLtieMWWiVaxiqhluewh3jrMr41mTSAKHSZkAGzj9qDZyU2Glf9MMfygBN/exec';
+
+/* ── WEB BASE URL ────────────────────────────────────
+   The public URL where your web version of the app is
+   hosted (e.g. GitHub Pages, Netlify, your own domain).
+   Quiz links and result links shared via the app will
+   use this URL so they open correctly in a browser.
+   Change this to your actual domain when you host it.
+   ──────────────────────────────────────────────────── */
+const WEB_BASE_URL = 'https://examdriller-onlinecbt.vercel.app';
 
 /* ── SUBJECT METADATA ──────────────────────────────── */
 const SUBJECTS_META = [
@@ -72,13 +219,40 @@ const screens = {
   review:      document.getElementById('screen-review'),
   history:     document.getElementById('screen-history'),
   resultView:  document.getElementById('screen-result-view'),
+  admin:       document.getElementById('screen-admin'),
+  quizTaker:   document.getElementById('screen-quiz-taker'),
+  quizResults: document.getElementById('screen-quiz-results'),
 };
 
+// Track navigation so back button works correctly
+var screenHistory = [];
+
 function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
+  Object.values(screens).forEach(s => { if (s) s.classList.remove('active'); });
   if (screens[name]) screens[name].classList.add('active');
   window.scrollTo(0, 0);
+  // Don't stack duplicates; always keep 'home' as the base
+  if (screenHistory[screenHistory.length - 1] !== name) {
+    screenHistory.push(name);
+  }
 }
+
+// Called by Android onBackPressed via evaluateJavascript
+window.handleBackButton = function() {
+  // Remove current screen from history
+  if (screenHistory.length > 1) {
+    screenHistory.pop();
+    var prev = screenHistory[screenHistory.length - 1];
+    Object.values(screens).forEach(s => { if (s) s.classList.remove('active'); });
+    if (screens[prev]) screens[prev].classList.add('active');
+    window.scrollTo(0, 0);
+  } else {
+    // Already at root (home/login) — let Android exit the app
+    if (window.Android && typeof window.Android.exitApp === 'function') {
+      window.Android.exitApp();
+    }
+  }
+};
 
 /* ── TOAST ─────────────────────────────────────────── */
 const toastEl = document.getElementById('toast');
@@ -189,6 +363,7 @@ function updateHomeGreeting() {
 
 /** On load — restore saved session or show login */
 function initAuth() {
+  if (restoreActivationState()) _isActivated = true;
   try {
     const saved = localStorage.getItem('examdriller_user');
     if (saved) {
@@ -207,6 +382,7 @@ document.getElementById('btn-login').addEventListener('click', async function() 
   if (!email) { showToast('Please enter your email address'); return; }
 
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL') {
+    _isActivated = true;
     saveSession({ name: email.split('@')[0], email: email });
     showScreen('home');
     return;
@@ -214,14 +390,33 @@ document.getElementById('btn-login').addEventListener('click', async function() 
 
   showLoading('Signing in…');
   try {
-    const result = await apiCall({ action: 'login', email: email });
+    const deviceId = getDeviceId();
+    const result = await apiCall({ action: 'login', email: email, deviceId: deviceId });
     hideLoading();
+
     if (result.success) {
+      if (result.activated === true) markActivated();
       saveSession(result.user);
       showScreen('home');
-      showToast('Welcome back, ' + result.user.name + '!');
+      if (_isActivated) {
+        showToast('Welcome back, ' + result.user.name + '!');
+      } else {
+        showToast('Free trial active. 1 quiz allowed.');
+      }
+    } else if (result.error === 'wrong_device') {
+      const waMsg = encodeURIComponent('Hello, I need help with my ExamDriller Lite account: ' + email);
+      showToast('This app is activated on another device. Contact support.');
+      setTimeout(function() {
+        if (window.Android && window.Android.openUrl) {
+          window.Android.openUrl('https://wa.me/2349116959509?text=' + waMsg);
+        } else {
+          window.open('https://wa.me/2349116959509?text=' + waMsg, '_blank');
+        }
+      }, 2000);
+    } else if (result.error === 'invalid_email') {
+      showToast('Please enter a valid Gmail address.');
     } else {
-      showToast(result.error || 'Account not found. Please create one.');
+      showToast('Sign in failed. Check your internet and try again.');
     }
   } catch (e) {
     hideLoading();
@@ -234,31 +429,29 @@ document.getElementById('login-email').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('btn-login').click();
 });
 
-/* ── Register form ─────────────────────────────────── */
+/* ── Register form ──────────────────────────────────── */
 document.getElementById('btn-register').addEventListener('click', async function() {
   const name  = document.getElementById('reg-name').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
 
-  if (!name || !phone || !email) { showToast('All fields are required'); return; }
-
-  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL') {
-    saveSession({ name: name, email: email });
-    showScreen('home');
-    showToast('Welcome, ' + name + '!');
-    return;
-  }
+  if (!name)  { showToast('Please enter your full name'); return; }
+  if (!phone) { showToast('Please enter your phone number'); return; }
+  if (!email) { showToast('Please enter your email address'); return; }
 
   showLoading('Creating account…');
   try {
-    const result = await apiCall({ action: 'register', name: name, phone: phone, email: email });
+    const deviceId = getDeviceId();
+    const result = await apiCall({ action: 'register', name: name, phone: phone, email: email, deviceId: deviceId });
     hideLoading();
+
     if (result.success) {
+      if (result.activated === true) markActivated();
       saveSession(result.user);
       showScreen('home');
-      showToast('Account created! Welcome, ' + result.user.name + '!');
+      showToast('Welcome, ' + result.user.name + '! 🎉');
     } else {
-      showToast(result.error || 'Registration failed. Please try again.');
+      showToast(result.error || 'Registration failed. Try again.');
     }
   } catch (e) {
     hideLoading();
@@ -331,9 +524,68 @@ function initParticles() {
 }
 
 document.getElementById('btn-start').addEventListener('click', function() {
+  if (!isActivated() && hasUsedFreeTrial()) {
+    showActivationWall();
+    return;
+  }
   renderSubjectGrid();
   showScreen('subjects');
 });
+
+/* ── Join Quiz button — handles codes AND pasted URLs ─────────────── */
+document.getElementById('btn-join-quiz').addEventListener('click', function() {
+  var input = document.getElementById('quiz-code-input').value.trim();
+  if (!input) { showToast('Enter a quiz code, result code, or paste a URL'); return; }
+
+  // ① Result URL pasted — e.g. https://.../#result=eyJ...
+  var resultMatch = input.match(/#result=([A-Za-z0-9+/=]+)/);
+  if (resultMatch) {
+    try {
+      var data = JSON.parse(atob(resultMatch[1]));
+      showResultFromLink(data);
+      document.getElementById('quiz-code-input').value = '';
+    } catch (e) { showToast('Invalid result link. Please check and try again.'); }
+    return;
+  }
+
+  // ② Result code — RS + 8 digits
+  if (/^RS\d{8}$/i.test(input)) {
+    loadResultByCode(input.toUpperCase());
+    document.getElementById('quiz-code-input').value = '';
+    return;
+  }
+
+  // ③ Quiz URL pasted — e.g. https://.../#quiz=q_123...
+  var quizMatch = input.match(/#quiz=([^&\s]+)/);
+  if (quizMatch) {
+    launchQuizFromLink(quizMatch[1]);
+    document.getElementById('quiz-code-input').value = '';
+    return;
+  }
+
+  // ④ Quiz code — ED + 8 digits (default)
+  launchQuizFromCode(input);
+});
+document.getElementById('quiz-code-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('btn-join-quiz').click();
+});
+
+/* ── Load result by RS code ───────────────────────────────────────── */
+async function loadResultByCode(code) {
+  showLoading('Looking up result…');
+  try {
+    const result = await apiCall({ action: 'getResult', resultCode: code });
+    hideLoading();
+    if (result.success) {
+      showResultFromLink(result.result);
+    } else {
+      showToast(result.error || 'Result not found. Check the code and try again.');
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('Connection error. Check your internet.');
+  }
+}
 
 /* ── History button on home ─────────────────────────── */
 document.getElementById('btn-history-home').addEventListener('click', function() {
@@ -633,7 +885,13 @@ function updateConfigSummary() {
   summaryEl.innerHTML = '<span>Total: <strong>' + total + ' Qs</strong></span><span>Score: <strong>out of 400</strong></span>';
 }
 
-document.getElementById('btn-start-exam').addEventListener('click', function() { startExam(); });
+document.getElementById('btn-start-exam').addEventListener('click', function() {
+  if (!isActivated() && hasUsedFreeTrial()) {
+    showActivationWall();
+    return;
+  }
+  startExam();
+});
 
 /* ═══════════════════════════════════════════════════════
    DATA LOADING
@@ -641,9 +899,20 @@ document.getElementById('btn-start-exam').addEventListener('click', function() {
 async function loadSubjectData(catId) {
   if (examState.subjectData[catId]) return examState.subjectData[catId];
   const sub = SUBJECTS_META.find(function(s) { return s.cat_id === catId; });
-  const res = await fetch('data/' + sub.file);
-  if (!res.ok) throw new Error('Failed to load ' + sub.file);
-  const data = await res.json();
+  const data = await new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'data/' + sub.file, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      if (xhr.status === 200 || xhr.status === 0) {
+        resolve(xhr.response);
+      } else {
+        reject(new Error('Failed to load ' + sub.file));
+      }
+    };
+    xhr.onerror = function() { reject(new Error('Failed to load ' + sub.file)); };
+    xhr.send();
+  });
   examState.subjectData[catId] = data;
   return data;
 }
@@ -941,6 +1210,11 @@ function submitExam() {
   clearInterval(examState.timerInterval);
   examState.results = calculateResults();
 
+  // Free trial tracking — after first exam, mark trial as used
+  if (!isActivated()) {
+    markFreeTrialUsed();
+  }
+
   const { totalScore } = examState.results;
   const subjectTitles  = examState.selectedSubjects.map(function(id) {
     const s = SUBJECTS_META.find(function(m) { return m.cat_id === id; });
@@ -1059,22 +1333,32 @@ function animateCounter(el, from, to, duration) {
 function makeResultLink(quizId, quizName, takerName, score, outOf) {
   try {
     const data = { quizId: quizId, quizName: quizName, name: takerName, score: score, outOf: outOf, ts: Date.now() };
-    return location.origin + location.pathname + '#result=' + btoa(JSON.stringify(data));
+    return WEB_BASE_URL + '/#result=' + btoa(JSON.stringify(data));
   } catch (e) {
-    return location.origin + location.pathname;
+    return WEB_BASE_URL;
   }
 }
 
-document.getElementById('btn-share-result').addEventListener('click', function() {
+document.getElementById('btn-share-result').addEventListener('click', async function() {
   if (!examState.results) return;
   const takerName = currentUser ? currentUser.name : (examState._takerName || 'Student');
-  const link = makeResultLink(
-    examState._quizId || '',
-    examState._quizName || 'Quiz',
-    takerName,
-    examState.results.totalScore,
-    400
-  );
+  const score     = examState.results.totalScore;
+  const outOf     = 400;
+  const quizName  = examState._quizName || 'Quiz';
+
+  showLoading('Generating share link…');
+  let resultCode = '';
+  try {
+    const saved = await apiCall({ action: 'saveResult', quizName: quizName, name: takerName, score: score, outOf: outOf, ts: Date.now() });
+    if (saved.success) resultCode = saved.resultCode;
+  } catch (e) { /* non-critical */ }
+  hideLoading();
+
+  const link = makeResultLink(examState._quizId || '', quizName, takerName, score, outOf);
+  const codeEl = document.getElementById('share-result-code-display');
+  const codeRow = document.getElementById('share-result-code-row');
+  if (codeEl) codeEl.textContent = resultCode || '—';
+  if (codeRow) codeRow.style.display = resultCode ? '' : 'none';
   document.getElementById('share-result-link-display').textContent = link;
   document.getElementById('modal-share-result').classList.remove('hidden');
 });
@@ -1087,6 +1371,17 @@ document.getElementById('btn-copy-result-link').addEventListener('click', functi
     document.execCommand('copy'); document.body.removeChild(el);
   });
   showToast('Result link copied!');
+});
+
+document.getElementById('btn-copy-result-code').addEventListener('click', function() {
+  const txt = document.getElementById('share-result-code-display').textContent;
+  if (!txt || txt === '—') return;
+  navigator.clipboard.writeText(txt).catch(function() {
+    const el = document.createElement('textarea');
+    el.value = txt; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+  });
+  showToast('Result code copied!');
 });
 
 document.getElementById('btn-close-share-modal').addEventListener('click', function() {
@@ -1457,6 +1752,7 @@ async function openAdminDashboard() {
   showScreen('admin');
   renderAdminSubjectPicker();
   document.getElementById('admin-quizzes-list').innerHTML = '<p class="admin-empty-msg">Loading quizzes…</p>';
+  document.getElementById('admin-all-keys-list').innerHTML = '<p class="admin-empty-msg">Loading keys…</p>';
   try {
     const result = await apiCall({ action: 'getQuizzes', email: currentUser.email });
     if (result.success) {
@@ -1470,6 +1766,8 @@ async function openAdminDashboard() {
     document.getElementById('admin-quizzes-list').innerHTML =
       '<p class="admin-empty-msg">Connection error. Check internet.</p>';
   }
+  // Load existing keys
+  loadAdminKeys();
 }
 
 function renderAdminSubjectPicker() {
@@ -1493,6 +1791,99 @@ function renderAdminSubjectPicker() {
       }
     });
     picker.appendChild(btn);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADMIN — ACTIVATION KEYS
+   ═══════════════════════════════════════════════════════ */
+var adminKeyCount = 1;
+
+document.querySelectorAll('#admin-key-count-group .toggle-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#admin-key-count-group .toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    adminKeyCount = parseInt(btn.dataset.count);
+  });
+});
+
+document.getElementById('btn-generate-key').addEventListener('click', async function() {
+  var note = document.getElementById('admin-key-note').value.trim();
+  showLoading('Generating key(s)…');
+  try {
+    var result = await apiCall({ action: 'generateKey', email: currentUser.email, note: note, count: adminKeyCount });
+    hideLoading();
+    if (!result.success) { showToast(result.error || 'Failed to generate keys'); return; }
+
+    var outputEl = document.getElementById('admin-keys-output');
+    var listEl   = document.getElementById('admin-keys-list');
+    outputEl.style.display = 'block';
+    listEl.innerHTML = '';
+
+    result.keys.forEach(function(key) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;' +
+        'background:var(--bg-primary);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;';
+      row.innerHTML =
+        '<span style="font-family:Outfit,monospace;font-size:1rem;font-weight:800;color:var(--accent-gold);letter-spacing:2px;">' + key + '</span>' +
+        '<button style="padding:6px 14px;border-radius:8px;border:none;background:var(--bg-navy);color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer;">Copy</button>';
+      row.querySelector('button').addEventListener('click', function() {
+        navigator.clipboard.writeText(key).catch(function() {
+          var el = document.createElement('textarea');
+          el.value = key; document.body.appendChild(el); el.select();
+          document.execCommand('copy'); document.body.removeChild(el);
+        });
+        showToast('Key copied: ' + key);
+      });
+      listEl.appendChild(row);
+    });
+
+    document.getElementById('admin-key-note').value = '';
+    loadAdminKeys(); // refresh all-keys list
+  } catch (e) {
+    hideLoading();
+    showToast('Connection error. Try again.');
+  }
+});
+
+async function loadAdminKeys() {
+  var container = document.getElementById('admin-all-keys-list');
+  if (!container) return;
+  try {
+    var result = await apiCall({ action: 'getKeys', email: currentUser.email });
+    if (!result.success) { container.innerHTML = '<p class="admin-empty-msg">Could not load keys.</p>'; return; }
+    renderAdminKeys(result.keys);
+  } catch (e) {
+    container.innerHTML = '<p class="admin-empty-msg">Connection error.</p>';
+  }
+}
+
+function renderAdminKeys(keys) {
+  var container = document.getElementById('admin-all-keys-list');
+  if (!keys.length) { container.innerHTML = '<p class="admin-empty-msg">No keys generated yet.</p>'; return; }
+  container.innerHTML = '';
+  keys.slice().reverse().forEach(function(k) {
+    var used    = k.usedBy ? true : false;
+    var row     = document.createElement('div');
+    row.style.cssText = 'padding:10px 12px;border-radius:10px;margin-bottom:8px;border:1.5px solid ' +
+      (used ? 'var(--border)' : 'rgba(212,144,10,0.4)') + ';background:' +
+      (used ? 'var(--bg-primary)' : 'rgba(212,144,10,0.06)') + ';';
+
+    row.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+        '<span style="font-family:Outfit,monospace;font-size:0.9rem;font-weight:800;letter-spacing:1px;color:' +
+          (used ? 'var(--text-muted)' : 'var(--accent-gold)') + ';">' + k.key + '</span>' +
+        '<span style="font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:20px;background:' +
+          (used ? 'rgba(220,38,38,0.1)' : 'rgba(22,163,74,0.1)') + ';color:' +
+          (used ? 'var(--wrong)' : 'var(--correct)') + ';">' +
+          (used ? '✗ Used' : '✓ Available') +
+        '</span>' +
+      '</div>' +
+      (k.note    ? '<div style="font-size:0.78rem;color:var(--text-secondary);margin-top:4px;">📝 ' + k.note + '</div>' : '') +
+      (k.usedBy  ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px;">👤 ' + k.usedBy + '</div>' : '') +
+      '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px;">📅 ' + k.generatedAt + '</div>';
+
+    container.appendChild(row);
   });
 }
 
@@ -1536,7 +1927,9 @@ document.getElementById('btn-generate-quiz').addEventListener('click', async fun
     hideLoading();
     if (!result.success) { showToast(result.error || 'Failed to create quiz'); return; }
 
-    const link = location.origin + location.pathname + '#quiz=' + result.quizId;
+    const link = WEB_BASE_URL + '/#quiz=' + result.quizId;
+    const quizCodeEl = document.getElementById('quiz-code-display');
+    if (quizCodeEl) quizCodeEl.textContent = result.quizCode || '';
     document.getElementById('quiz-link-display').textContent = link;
     document.getElementById('modal-quiz-link').classList.remove('hidden');
 
@@ -1562,6 +1955,17 @@ document.getElementById('btn-copy-link').addEventListener('click', function() {
     document.execCommand('copy'); document.body.removeChild(el);
   });
   showToast('Link copied!');
+});
+
+document.getElementById('btn-copy-quiz-code').addEventListener('click', function() {
+  const txt = document.getElementById('quiz-code-display').textContent;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).catch(function() {
+    const el = document.createElement('textarea');
+    el.value = txt; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+  });
+  showToast('Quiz code copied!');
 });
 
 document.getElementById('btn-close-link-modal').addEventListener('click', function() {
@@ -1604,7 +2008,10 @@ function renderAdminQuizList() {
 
   container.querySelectorAll('.btn-quiz-link').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      const link = location.origin + location.pathname + '#quiz=' + btn.dataset.id;
+      const quiz = adminState.quizzes.find(function(q) { return q.id === btn.dataset.id; });
+      const link = WEB_BASE_URL + '/#quiz=' + btn.dataset.id;
+      const quizCodeEl = document.getElementById('quiz-code-display');
+      if (quizCodeEl && quiz) quizCodeEl.textContent = quiz.quizCode || '';
       document.getElementById('quiz-link-display').textContent = link;
       document.getElementById('modal-quiz-link').classList.remove('hidden');
     });
@@ -1664,11 +2071,31 @@ document.getElementById('back-admin-to-home').addEventListener('click', function
 document.getElementById('back-quiz-results').addEventListener('click', function() { showScreen('admin'); });
 
 /* ═══════════════════════════════════════════════════════
-   QUIZ TAKER — Handle #quiz=<id> links (NO LOGIN NEEDED)
+   QUIZ TAKER — Handle #quiz=<id> links AND quiz codes
    ═══════════════════════════════════════════════════════ */
 function getQuizIdFromHash() {
   const match = location.hash.match(/^#quiz=(.+)$/);
   return match ? match[1] : null;
+}
+
+/* ── Load quiz by ED code (e.g. ED47382910) ─────────────── */
+async function launchQuizFromCode(rawCode) {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) { showToast('Please enter a quiz code'); return; }
+
+  showLoading('Looking up quiz…');
+  try {
+    const result = await apiCall({ action: 'getQuizByCode', quizCode: code });
+    hideLoading();
+    if (result.success) {
+      launchQuizFromLink(result.quiz.id);
+    } else {
+      showToast(result.error || 'Quiz code not found');
+    }
+  } catch (e) {
+    hideLoading();
+    showToast('Connection error. Check your internet.');
+  }
 }
 
 async function launchQuizFromLink(quizId) {
